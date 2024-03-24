@@ -1,0 +1,6 @@
+version: "3.7"
+services:
+  pie-tunes-streaming:
+    image: pie-tunes-streaming:latest
+    container_name: "pie-tunes-streaming"
+    network_mode: host
