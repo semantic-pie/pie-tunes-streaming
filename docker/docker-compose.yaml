@@ -1,7 +1,17 @@
 version: "3.7"
 services:
-  pie-tunes-streaming:
+  pie-tunes-streaming-prod:
     image: pie-tunes-streaming:latest
+    container_name: "pie-tunes-streaming-prod"
+    networks:
+      - pie-tunes-network-prod
+    ports:
+      - "9999:9999"
     restart: always
-    container_name: "pie-tunes-streaming"
-    network_mode: host
+    environment:
+      - MINIO_URL=http://pie-tunes-minio-prod:9000
+
+networks:
+  pie-tunes-network-prod:
+    name: pie-tunes-network-prod
+    external: true
