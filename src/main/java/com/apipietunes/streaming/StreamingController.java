@@ -82,6 +82,7 @@ public class StreamingController {
 
         return ResponseEntity.ok()
                 .contentLength(lengthInBytes)
+                .header("Cache-Control", "public, max-age=86400")
                 .contentType(MediaType.parseMediaType(contentType))
                 .body(new InputStreamResource(cover));
     }
