@@ -1,7 +1,5 @@
 package com.apipietunes.streaming;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StreamingController {
+    @Value("${streaming.chank-size}")
+    public int chankSize;
+
     @Value("${minio.buckets.tracks}")
     public String TRACKS_BUCKET;
 
@@ -37,53 +38,6 @@ public class StreamingController {
 
     private final MinioClient minioClient;
 
-    // Check if the request is for a specific range
-    // if (isRanged(rangeHeaderValue)) {
-    // log.info("is ranged request");
-
-    // String[] ranges = rangeHeaderValue.substring(6).split("-");
-    // long start = Long.parseLong(ranges[0]);
-    // long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : 999;
-
-    // // log.info("is ranged request");
-
-    // final var track = getTrackFileById(id, start);
-    // // log.info("track headers:", track.headers());
-    // final var lengthInBytes =
-    // Integer.parseInt(track.headers().get("Content-Length"));
-    // // calculate bytes range
-
-    // // long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : lengthInBytes -
-    // 1;
-    // String bytesRange = String.format("bytes %d-%d", start, end, lengthInBytes);
-
-    // // try {
-    // // // skip bytes out of range
-    // // track.skip(start);
-    // // } catch (IOException ignored) {
-    // // log.warn("Error while skiping bytes in ranged request. Track id: '{}'",
-    // id);
-    // // }
-
-    // return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-    // .header("Content-Range", bytesRange)
-    // .contentType(MediaType.APPLICATION_OCTET_STREAM)
-    // .contentLength(end - start + 1)
-    // .
-    // .body(new InputStreamResource(track));
-
-    // } else {
-    // // If no range is requested, return the entire file
-    // final var track = getTrackFileById(id);
-    // final var lengthInBytes =
-    // Integer.parseInt(track.headers().get("Content-Length"));
-
-    // return ResponseEntity.ok()
-    // .contentLength(lengthInBytes)
-    // .contentType(MediaType.APPLICATION_OCTET_STREAM)
-    // .body(new InputStreamResource(track));
-    // }
-    // }
 
     @GetMapping("/api/tracks/covers/{id}")
     public ResponseEntity<InputStreamResource> cover(@PathVariable String id) {
@@ -102,21 +56,13 @@ public class StreamingController {
     public ResponseEntity<byte[]> play(
             @PathVariable(value = "id") String id,
             @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
+        Range range = Range.parseHttpRangeString(rangeHeaderValue, chankSize);
 
-        
-        Range range = Range.parseHttpRangeString(rangeHeaderValue, 3145728);
-        log.info("range: {}", range);
         var stat = getTrackFileStatById(id);
-        log.info("stat: {}", stat);
-        log.info("stat size: {}", stat.size());
-        log.info("stat type: {}", stat.contentType());
-
         var chunk = readChunk(id, range, stat.size());
-        log.info("chunk meta-data: {}", chunk.length);
 
         return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                 .header(HttpHeaders.CONTENT_TYPE, stat.contentType())
-                // .header(HttpHeaders.ACCEPT_RANGES, HTTPCONsta.ACCEPTS_RANGES_VALUE)
                 .header(HttpHeaders.CONTENT_LENGTH, calculateContentLengthHeader(range, stat.size()))
                 .header(HttpHeaders.CONTENT_RANGE, constructContentRangeHeader(range, stat.size()))
                 .body(chunk);
@@ -140,10 +86,6 @@ public class StreamingController {
             log.error("Exception occurred when trying to read file with ID = {}", id);
             throw new RuntimeException(exception);
         }
-    }
-
-    private boolean isRanged(String range) {
-        return range != null && range.startsWith("bytes=");
     }
 
     public GetObjectResponse getTrackCoverById(String id) {
@@ -202,19 +144,4 @@ public class StreamingController {
             throw new ObjectNotFoundException(msg);
         }
     }
-
-    // public GetObjectResponse getTrackFileById(String id, String region) {
-    // try {
-    // return minioClient.getObject(
-    // GetObjectArgs.builder()
-    // .bucket(TRACKS_BUCKET)
-    // .object(id)
-    // .region(region)
-    // .build());
-    // } catch (Exception ex) {
-    // String msg = String.format("Track '%s' not found", id);
-    // log.warn(msg);
-    // throw new ObjectNotFoundException(msg);
-    // }
-    // }
 }
