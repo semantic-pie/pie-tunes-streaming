@@ -46,7 +46,7 @@ public class StreamingController {
 
             String[] ranges = rangeHeaderValue.substring(6).split("-");
             long start = Long.parseLong(ranges[0]);
-            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : 500;
+            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : 499;
 
             // log.info("is ranged request"); 
             
@@ -56,7 +56,7 @@ public class StreamingController {
             // calculate bytes range
             
             // long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : lengthInBytes - 1;
-            String bytesRange = String.format("bytes %d-%d/%d", start, end, lengthInBytes);
+            String bytesRange = String.format("bytes %d-%d", start, end, lengthInBytes);
 
             // try {
             //     // skip bytes out of range
