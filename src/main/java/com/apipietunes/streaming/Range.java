@@ -1,8 +1,10 @@
 package com.apipietunes.streaming;
 
 import lombok.Builder;
+import lombok.ToString;
 
 @Builder
+@ToString
 public class Range {
 
     private final long start;

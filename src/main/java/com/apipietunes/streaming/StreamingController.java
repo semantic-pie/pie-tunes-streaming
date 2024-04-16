@@ -37,31 +37,6 @@ public class StreamingController {
 
     private final MinioClient minioClient;
 
-    @GetMapping("/api/play/{id}.mp3")
-    public ResponseEntity<byte[]> play(
-            @PathVariable(value = "id") String id,
-            @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
-
-        Range range = Range.parseHttpRangeString(rangeHeaderValue, 500);
-
-        var stat = getTrackFileStatById(id);
-        var chunk = readChunk(id, range, stat.size());
-
-        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                .header(HttpHeaders.CONTENT_TYPE, stat.contentType())
-                // .header(HttpHeaders.ACCEPT_RANGES, HTTPCONsta.ACCEPTS_RANGES_VALUE)
-                .header(HttpHeaders.CONTENT_LENGTH, calculateContentLengthHeader(range, chunk.length - 1))
-                .header(HttpHeaders.CONTENT_RANGE, constructContentRangeHeader(range, chunk.length - 1))
-                .body(chunk);
-    }
-
-    private String calculateContentLengthHeader(Range range, long fileSize) {
-        return String.valueOf(range.getRangeEnd(fileSize) - range.getRangeStart() + 1);
-    }
-
-    private String constructContentRangeHeader(Range range, long fileSize) {
-        return  "bytes " + range.getRangeStart() + "-" + range.getRangeEnd(fileSize) + "/" + fileSize;
-    }
     // Check if the request is for a specific range
     // if (isRanged(rangeHeaderValue)) {
     // log.info("is ranged request");
@@ -121,6 +96,38 @@ public class StreamingController {
                 .header("Cache-Control", "public, max-age=86400")
                 .contentType(MediaType.parseMediaType(contentType))
                 .body(new InputStreamResource(cover));
+    }
+
+    @GetMapping("/api/play/{id}.mp3")
+    public ResponseEntity<byte[]> play(
+            @PathVariable(value = "id") String id,
+            @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
+
+        
+        Range range = Range.parseHttpRangeString(rangeHeaderValue, 500);
+        log.info("range: {}", range);
+        var stat = getTrackFileStatById(id);
+        log.info("stat: {}", stat);
+        log.info("stat size: {}", stat.size());
+        log.info("stat type: {}", stat.contentType());
+
+        var chunk = readChunk(id, range, stat.size());
+        log.info("chunk meta-data: {}", chunk.length);
+
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                .header(HttpHeaders.CONTENT_TYPE, stat.contentType())
+                // .header(HttpHeaders.ACCEPT_RANGES, HTTPCONsta.ACCEPTS_RANGES_VALUE)
+                .header(HttpHeaders.CONTENT_LENGTH, calculateContentLengthHeader(range, chunk.length - 1))
+                .header(HttpHeaders.CONTENT_RANGE, constructContentRangeHeader(range, chunk.length - 1))
+                .body(chunk);
+    }
+
+    private String calculateContentLengthHeader(Range range, long fileSize) {
+        return String.valueOf(range.getRangeEnd(fileSize) - range.getRangeStart() + 1);
+    }
+
+    private String constructContentRangeHeader(Range range, long fileSize) {
+        return  "bytes " + range.getRangeStart() + "-" + range.getRangeEnd(fileSize) + "/" + fileSize;
     }
 
     private byte[] readChunk(String id, Range range, long fileSize) {
