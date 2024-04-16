@@ -46,7 +46,7 @@ public class StreamingController {
 
             String[] ranges = rangeHeaderValue.substring(6).split("-");
             long start = Long.parseLong(ranges[0]);
-            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : 499;
+            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : 999;
 
             // log.info("is ranged request"); 
             
