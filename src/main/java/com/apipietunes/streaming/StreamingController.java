@@ -44,19 +44,19 @@ public class StreamingController {
         if (isRanged(rangeHeaderValue)) {
             log.info("is ranged request"); 
 
-            // String[] ranges = rangeHeaderValue.substring(6).split("-");
-            // long start = Long.parseLong(ranges[0]);
-            // long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : null;
+            String[] ranges = rangeHeaderValue.substring(6).split("-");
+            long start = Long.parseLong(ranges[0]);
+            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : 500;
 
             // log.info("is ranged request"); 
-
-            final var track = getTrackFileById(id, rangeHeaderValue);
-            log.info("track headers:", track.headers());
-            // final var lengthInBytes = Integer.parseInt(track.headers().get("Content-Length"));
+            
+            final var track = getTrackFileById(id, start, end);
+            // log.info("track headers:", track.headers());
+            final var lengthInBytes = Integer.parseInt(track.headers().get("Content-Length"));
             // calculate bytes range
             
             // long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : lengthInBytes - 1;
-            // String bytesRange = String.format("bytes %d-%d/%d", start, end, lengthInBytes);
+            String bytesRange = String.format("bytes %d-%d/%d", start, end, lengthInBytes);
 
             // try {
             //     // skip bytes out of range
@@ -66,9 +66,9 @@ public class StreamingController {
             // }
 
             return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                    // .header("Content-Range", bytesRange)
+                    .header("Content-Range", bytesRange)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    // .contentLength(end - start + 1)
+                    .contentLength(end - start + 1)
                     .body(new InputStreamResource(track));
 
         } else {
@@ -114,6 +114,22 @@ public class StreamingController {
         }
     }
 
+    public GetObjectResponse getTrackFileById(String id, Long offset, Long length) {
+        try {
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(TRACKS_BUCKET)
+                            .object(id)
+                            .offset(offset)
+                            .length(length)
+                            .build());
+        } catch (Exception ex) {
+            String msg = String.format("Track '%s' not found", id);
+            log.warn(msg);
+            throw new ObjectNotFoundException(msg);
+        }
+    }
+
     public GetObjectResponse getTrackFileById(String id) {
         try {
             return minioClient.getObject(
@@ -128,18 +144,18 @@ public class StreamingController {
         }
     }
 
-    public GetObjectResponse getTrackFileById(String id, String region) {
-        try {
-            return minioClient.getObject(
-                    GetObjectArgs.builder()
-                            .bucket(TRACKS_BUCKET)
-                            .object(id)
-                            .region(region)
-                            .build());
-        } catch (Exception ex) {
-            String msg = String.format("Track '%s' not found", id);
-            log.warn(msg);
-            throw new ObjectNotFoundException(msg);
-        }
-    }
+    // public GetObjectResponse getTrackFileById(String id, String region) {
+    //     try {
+    //         return minioClient.getObject(
+    //                 GetObjectArgs.builder()
+    //                         .bucket(TRACKS_BUCKET)
+    //                         .object(id)
+    //                         .region(region)
+    //                         .build());
+    //     } catch (Exception ex) {
+    //         String msg = String.format("Track '%s' not found", id);
+    //         log.warn(msg);
+    //         throw new ObjectNotFoundException(msg);
+    //     }
+    // }
 }
