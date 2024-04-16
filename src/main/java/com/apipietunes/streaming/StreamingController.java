@@ -27,8 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StreamingController {
-    @Value("${streaming.chank-size}")
-    public int chankSize;
+    @Value("${streaming.default-chunk-size}")
+    public int defaultChankSize;
+
+    @Value("${streaming.initial-chank-size}")
+    public int initialChankSize;
 
     @Value("${minio.buckets.tracks}")
     public String TRACKS_BUCKET;
@@ -56,7 +59,9 @@ public class StreamingController {
     public ResponseEntity<byte[]> play(
             @PathVariable(value = "id") String id,
             @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
-        Range range = Range.parseHttpRangeString(rangeHeaderValue, chankSize);
+
+            
+        Range range = Range.parseHttpRangeString(rangeHeaderValue, defaultChankSize, initialChankSize);
 
         var stat = getTrackFileStatById(id);
         var chunk = readChunk(id, range, stat.size());

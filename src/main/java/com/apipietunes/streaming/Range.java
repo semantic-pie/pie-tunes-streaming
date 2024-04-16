@@ -19,7 +19,7 @@ public class Range {
         return Math.min(end, fileSize - 1);
     }
 
-    public static Range parseHttpRangeString(String httpRangeString, int defaultChunkSize) {
+    public static Range parseHttpRangeString(String httpRangeString, int defaultChunkSize,  int initChunkSize) {
         if (httpRangeString == null) {
             return Range.builder().start(0).end(defaultChunkSize).build();
         }
@@ -27,7 +27,10 @@ public class Range {
         long startRange = Long.parseLong(httpRangeString.substring(6, dashIndex));
         String endRangeString = httpRangeString.substring(dashIndex + 1);
         if (endRangeString.isEmpty()) {
-            return Range.builder().start(startRange).end(startRange + defaultChunkSize).build();
+            if (startRange == 0) 
+                return Range.builder().start(startRange).end(startRange + initChunkSize).build();
+            else 
+                return Range.builder().start(startRange).end(startRange + defaultChunkSize).build();
         }
         long endRange = Long.parseLong(endRangeString);
         return Range.builder().start(startRange).end(endRange).build();

@@ -30,8 +30,11 @@ public class StreamingApplication {
 	@Value("${minio.buckets.covers}")
 	public String COVERS_BUCKET;
 
-	@Value("${streaming.chank-size}")
-    public int chankSize;
+	@Value("${streaming.default-chank-size}")
+    public int defaultChankSize;
+
+	@Value("${streaming.initial-chank-size}")
+    public int initialChankSize;
 
 	@Bean
 	MinioClient minioClient() throws Exception {
@@ -60,7 +63,8 @@ public class StreamingApplication {
 		log.info("-------------------------");
 		log.info("COVERS_BUCKET: {}", COVERS_BUCKET);
 		log.info("TRACKS_BUCKET: {}", TRACKS_BUCKET);
-		log.info("CHANK_SIZE: {}", chankSize);
+		log.info("DEFAULT_CHANK_SIZE: {}", defaultChankSize);
+		log.info("INITIAL_CHANK_SIZE: {}", initialChankSize);
 		log.info("URL: {}", minioUrl);
 		log.info("-------------------------\n");
 	}
