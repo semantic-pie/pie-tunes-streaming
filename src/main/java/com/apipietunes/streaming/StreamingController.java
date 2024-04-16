@@ -39,39 +39,48 @@ public class StreamingController {
             @PathVariable(value = "id") String id,
             @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
 
-        final var track = getTrackFileById(id);
-        final var lengthInBytes = Integer.parseInt(track.headers().get("Content-Length"));
-
+        log.info("header: {}", rangeHeaderValue);
         // Check if the request is for a specific range
         if (isRanged(rangeHeaderValue)) {
+            log.info("is ranged request"); 
 
+            // String[] ranges = rangeHeaderValue.substring(6).split("-");
+            // long start = Long.parseLong(ranges[0]);
+            // long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : null;
+
+            // log.info("is ranged request"); 
+
+            final var track = getTrackFileById(id, rangeHeaderValue);
+            log.info("track headers:", track.headers());
+            // final var lengthInBytes = Integer.parseInt(track.headers().get("Content-Length"));
             // calculate bytes range
-            String[] ranges = rangeHeaderValue.substring(6).split("-");
-            long start = Long.parseLong(ranges[0]);
-            long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : lengthInBytes - 1;
-            String bytesRange = String.format("bytes %d-%d/%d", start, end, lengthInBytes);
-
             
-            try {
-                // skip bytes out of range
-                track.skip(start);
-            } catch (IOException ignored) {
-                log.warn("Error while skiping bytes in ranged request. Track id: '{}'", id);
-            }
+            // long end = ranges.length > 1 ? Long.parseLong(ranges[1]) : lengthInBytes - 1;
+            // String bytesRange = String.format("bytes %d-%d/%d", start, end, lengthInBytes);
+
+            // try {
+            //     // skip bytes out of range
+            //     track.skip(start);
+            // } catch (IOException ignored) {
+            //     log.warn("Error while skiping bytes in ranged request. Track id: '{}'", id);
+            // }
 
             return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                    .header("Content-Range", bytesRange)
+                    // .header("Content-Range", bytesRange)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .contentLength(end - start + 1)
+                    // .contentLength(end - start + 1)
                     .body(new InputStreamResource(track));
 
-        }
+        } else {
+            // If no range is requested, return the entire file
+            final var track = getTrackFileById(id);
+            final var lengthInBytes = Integer.parseInt(track.headers().get("Content-Length"));
 
-        // If no range is requested, return the entire file
-        return ResponseEntity.ok()
+            return ResponseEntity.ok()
                 .contentLength(lengthInBytes)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(new InputStreamResource(track));
+        } 
     }
 
     @GetMapping("/api/tracks/covers/{id}")
@@ -111,6 +120,21 @@ public class StreamingController {
                     GetObjectArgs.builder()
                             .bucket(TRACKS_BUCKET)
                             .object(id)
+                            .build());
+        } catch (Exception ex) {
+            String msg = String.format("Track '%s' not found", id);
+            log.warn(msg);
+            throw new ObjectNotFoundException(msg);
+        }
+    }
+
+    public GetObjectResponse getTrackFileById(String id, String region) {
+        try {
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(TRACKS_BUCKET)
+                            .object(id)
+                            .region(region)
                             .build());
         } catch (Exception ex) {
             String msg = String.format("Track '%s' not found", id);
