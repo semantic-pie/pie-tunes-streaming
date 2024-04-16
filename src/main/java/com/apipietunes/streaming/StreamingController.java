@@ -104,7 +104,7 @@ public class StreamingController {
             @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
 
         
-        Range range = Range.parseHttpRangeString(rangeHeaderValue, 500);
+        Range range = Range.parseHttpRangeString(rangeHeaderValue, 3145728);
         log.info("range: {}", range);
         var stat = getTrackFileStatById(id);
         log.info("stat: {}", stat);
