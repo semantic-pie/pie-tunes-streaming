@@ -117,8 +117,8 @@ public class StreamingController {
         return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                 .header(HttpHeaders.CONTENT_TYPE, stat.contentType())
                 // .header(HttpHeaders.ACCEPT_RANGES, HTTPCONsta.ACCEPTS_RANGES_VALUE)
-                .header(HttpHeaders.CONTENT_LENGTH, calculateContentLengthHeader(range, chunk.length))
-                .header(HttpHeaders.CONTENT_RANGE, constructContentRangeHeader(range, chunk.length))
+                .header(HttpHeaders.CONTENT_LENGTH, calculateContentLengthHeader(range, stat.size()))
+                .header(HttpHeaders.CONTENT_RANGE, constructContentRangeHeader(range, stat.size()))
                 .body(chunk);
     }
 
