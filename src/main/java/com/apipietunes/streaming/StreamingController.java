@@ -50,7 +50,7 @@ public class StreamingController {
 
             // log.info("is ranged request"); 
             
-            final var track = getTrackFileById(id, start, end);
+            final var track = getTrackFileById(id, start);
             // log.info("track headers:", track.headers());
             final var lengthInBytes = Integer.parseInt(track.headers().get("Content-Length"));
             // calculate bytes range
@@ -114,14 +114,13 @@ public class StreamingController {
         }
     }
 
-    public GetObjectResponse getTrackFileById(String id, Long offset, Long length) {
+    public GetObjectResponse getTrackFileById(String id, Long offset) {
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket(TRACKS_BUCKET)
                             .object(id)
                             .offset(offset)
-                            .length(length)
                             .build());
         } catch (Exception ex) {
             String msg = String.format("Track '%s' not found", id);
