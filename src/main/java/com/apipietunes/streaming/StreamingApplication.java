@@ -30,10 +30,10 @@ public class StreamingApplication {
 	@Value("${minio.buckets.covers}")
 	public String COVERS_BUCKET;
 
-	@Value("${streaming.default-chank-size}")
+	@Value("${streaming.default-chunk-size}")
     public Integer defaultChankSize;
 
-	@Value("${streaming.initial-chank-size}")
+	@Value("${streaming.initial-chunk-size}")
     public Integer initialChankSize;
 
 	@Bean

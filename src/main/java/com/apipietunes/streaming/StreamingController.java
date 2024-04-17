@@ -29,10 +29,10 @@ import lombok.extern.slf4j.Slf4j;
 public class StreamingController {
 
     @Value("${streaming.default-chunk-size}")
-    public Integer defaultChankSize;
+    public Integer defaultChunkSize;
 
-    @Value("${streaming.initial-chank-size}")
-    public Integer initialChankSize;
+    @Value("${streaming.initial-chunk-size}")
+    public Integer initialChunkSize;
 
     @Value("${minio.buckets.tracks}")
     public String TRACKS_BUCKET;
@@ -62,7 +62,7 @@ public class StreamingController {
             @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
 
             
-        Range range = Range.parseHttpRangeString(rangeHeaderValue, defaultChankSize, initialChankSize);
+        Range range = Range.parseHttpRangeString(rangeHeaderValue, defaultChunkSize, initialChunkSize);
 
         var stat = getTrackFileStatById(id);
         var chunk = readChunk(id, range, stat.size());
