@@ -27,11 +27,12 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StreamingController {
+
     @Value("${streaming.default-chunk-size}")
-    public int defaultChankSize;
+    public Integer defaultChankSize;
 
     @Value("${streaming.initial-chank-size}")
-    public int initialChankSize;
+    public Integer initialChankSize;
 
     @Value("${minio.buckets.tracks}")
     public String TRACKS_BUCKET;
