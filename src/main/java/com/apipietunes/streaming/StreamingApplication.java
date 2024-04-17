@@ -31,10 +31,10 @@ public class StreamingApplication {
 	public String COVERS_BUCKET;
 
 	@Value("${streaming.default-chank-size}")
-    public int defaultChankSize;
+    public Integer defaultChankSize;
 
 	@Value("${streaming.initial-chank-size}")
-    public int initialChankSize;
+    public Integer initialChankSize;
 
 	@Bean
 	MinioClient minioClient() throws Exception {
