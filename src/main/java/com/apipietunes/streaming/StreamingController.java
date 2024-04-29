@@ -69,7 +69,7 @@ public class StreamingController {
 
         return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
                 .header(HttpHeaders.CONTENT_TYPE, stat.contentType())
-                .header(HttpHeaders.CONTENT_LENGTH, calculateContentLengthHeader(range, stat.size()))
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(stat.size()))
                 .header(HttpHeaders.CONTENT_RANGE, constructContentRangeHeader(range, stat.size()))
                 .body(chunk);
     }
