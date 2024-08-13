@@ -10,10 +10,9 @@ services:
     restart: always
     environment:
       - MINIO_URL=http://pie-tunes-minio-prod:9000
-      - DEFAULT_CHUNK_SIZE=${DEFAULT_CHUNK_SIZE}
-      - INITIAL_CHUNK_SIZE=${INITIAL_CHUNK_SIZE}
+      # - DEFAULT_CHUNK_SIZE=${DEFAULT_CHUNK_SIZE}
+      # - INITIAL_CHUNK_SIZE=${INITIAL_CHUNK_SIZE}
 
 networks:
   pie-tunes-network-prod:
     name: pie-tunes-network-prod
-    external: true
