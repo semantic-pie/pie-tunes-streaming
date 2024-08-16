@@ -9,9 +9,13 @@ services:
       - "9999:9999"
     restart: always
     environment:
-      - MINIO_URL=http://pie-tunes-minio-prod:9000
-      # - DEFAULT_CHUNK_SIZE=${DEFAULT_CHUNK_SIZE}
-      # - INITIAL_CHUNK_SIZE=${INITIAL_CHUNK_SIZE}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKETS_TRACKS=${MINIO_BUCKETS_TRACKS}
+      - MINIO_BUCKETS_COVERS=${MINIO_BUCKETS_COVERS}
+      - DEFAULT_CHUNK_SIZE=${DEFAULT_CHUNK_SIZE}
+      - INITIAL_CHUNK_SIZE=${INITIAL_CHUNK_SIZE}
 
 networks:
   pie-tunes-network-prod:
