@@ -1,5 +1,9 @@
 package com.apipietunes.streaming.service.impl;
 
+import java.util.Locale;
+
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,7 @@ public class TrackSericeImpl implements TrackService {
 
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
+    private MessageSource messageSource;
 
     @Override
     public CoverData getTrackCoverById(String id) {
@@ -89,7 +94,8 @@ public class TrackSericeImpl implements TrackService {
                     .object(id)
                     .build());
         } catch (Exception ex) {
-            String msg = String.format("Track '%s' not found", id);
+            var args = new Object[] { id };
+            String msg = messageSource.getMessage("error.track_not_found", args, LocaleContextHolder.getLocale());
             throw new ObjectNotFoundException(msg);
         }
     }
@@ -104,7 +110,8 @@ public class TrackSericeImpl implements TrackService {
                             .length(length)
                             .build());
         } catch (Exception ex) {
-            String msg = String.format("Track '%s' not found", id);
+            var args = new Object[] { id };
+            String msg = messageSource.getMessage("error.track_not_found", args, LocaleContextHolder.getLocale());
             throw new ObjectNotFoundException(msg);
         }
     }

@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ExceptionHandler(ObjectNotFoundException.class)
-    public ApiPieTunesErrorInfo handleNotFound(ServerWebExchange exchange, Exception ex) {
+    public ApiPieTunesErrorInfo handleNotFound(ServerWebExchange exchange, ObjectNotFoundException ex) {
         log.warn(ex.getMessage());
         return new ApiPieTunesErrorInfo(HttpStatus.NOT_FOUND.value(),
                 exchange.getRequest().getPath().toString(), ex.getMessage());
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(RuntimeException.class)
-    ApiPieTunesErrorInfo handleActionEventExceptionException(ServerWebExchange exchange, Exception ex) {
+    ApiPieTunesErrorInfo handleActionEventExceptionException(ServerWebExchange exchange, RuntimeException ex) {
         return new ApiPieTunesErrorInfo(HttpStatus.BAD_REQUEST.value(),
                 exchange.getRequest().getPath().toString(), ex.getMessage());
     }
