@@ -31,4 +31,8 @@ public class Range {
         long endRange = Long.parseLong(endRangeString);
         return Range.builder().start(startRange).end(endRange).build();
     }
+
+    public static String constructContentRangeHeader(Range range, long fileSize) {
+        return "bytes " + range.getRangeStart() + "-" + range.getRangeEnd(fileSize) + "/" + fileSize;
+    }
 }
