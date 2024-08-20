@@ -1,4 +1,3 @@
-version: "3.7"
 services:
   pie-tunes-streaming-prod:
     image: pie-tunes-streaming:latest
