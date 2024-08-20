@@ -1,4 +1,4 @@
-package com.apipietunes.streaming.exceptions;
+package com.apipietunes.streaming.dto;
 
 import java.time.LocalDateTime;
 
@@ -25,5 +25,4 @@ public class ApiPieTunesErrorInfo {
         this.message = message;
 
     }
-    // Egor: в дальнейшем можно будет добавить список subErrors
 }

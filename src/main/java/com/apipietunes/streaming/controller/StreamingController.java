@@ -1,6 +1,5 @@
-package com.apipietunes.streaming;
+package com.apipietunes.streaming.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.apipietunes.streaming.exceptions.ObjectNotFoundException;
+import com.apipietunes.streaming.config.MinioProperties;
+import com.apipietunes.streaming.config.StreamingProperties;
+import com.apipietunes.streaming.exception.ObjectNotFoundException;
+import com.apipietunes.streaming.util.Range;
 
 import io.minio.GetObjectArgs;
 import io.minio.GetObjectResponse;
@@ -27,42 +29,33 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class StreamingController {
-
-    @Value("${streaming.default-chunk-size}")
-    public Integer defaultChunkSize;
-
-    @Value("${streaming.initial-chunk-size}")
-    public Integer initialChunkSize;
-
-    @Value("${minio.buckets.tracks}")
-    public String TRACKS_BUCKET;
-
-    @Value("${minio.buckets.covers}")
-    public String COVERS_BUCKET;
-
+    private final StreamingProperties streamingProperties;
+    private final MinioProperties minioProperties;
     private final MinioClient minioClient;
-
+    private final String CACHE_CONTROL_MAX_AGE = "public, max-age=86400";
 
     @GetMapping("/api/tracks/covers/{id}")
     public ResponseEntity<InputStreamResource> cover(@PathVariable String id) {
         final var cover = getTrackCoverById(id);
-        final var lengthInBytes = Integer.parseInt(cover.headers().get("Content-Length"));
-        final var contentType = cover.headers().get("Content-Type");
+        final var lengthInBytes = Integer.parseInt(cover.headers().get(HttpHeaders.CONTENT_LENGTH));
+        final var contentType = cover.headers().get(HttpHeaders.CONTENT_TYPE);
 
         return ResponseEntity.ok()
                 .contentLength(lengthInBytes)
-                .header("Cache-Control", "public, max-age=86400")
+                .header(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_MAX_AGE)
                 .contentType(MediaType.parseMediaType(contentType))
                 .body(new InputStreamResource(cover));
     }
 
     @GetMapping("/api/play/{id}.mp3")
     public ResponseEntity<byte[]> play(
-            @PathVariable(value = "id") String id,
-            @RequestHeader(value = "Range", required = false) String rangeHeaderValue) {
+            @PathVariable String id,
+            @RequestHeader(value = HttpHeaders.RANGE, required = false) String rangeHeaderValue) {
 
-            
-        Range range = Range.parseHttpRangeString(rangeHeaderValue, defaultChunkSize, initialChunkSize);
+        Range range = Range.parseHttpRangeString(
+                rangeHeaderValue,
+                streamingProperties.getDefaultChunkSize(),
+                streamingProperties.getInitialChunkSize());
 
         var stat = getTrackFileStatById(id);
         var chunk = readChunk(id, range, stat.size());
@@ -74,12 +67,8 @@ public class StreamingController {
                 .body(chunk);
     }
 
-    private String calculateContentLengthHeader(Range range, long fileSize) {
-        return String.valueOf(range.getRangeEnd(fileSize) - range.getRangeStart() + 1);
-    }
-
     private String constructContentRangeHeader(Range range, long fileSize) {
-        return  "bytes " + range.getRangeStart() + "-" + range.getRangeEnd(fileSize) + "/" + fileSize;
+        return "bytes " + range.getRangeStart() + "-" + range.getRangeEnd(fileSize) + "/" + fileSize;
     }
 
     private byte[] readChunk(String id, Range range, long fileSize) {
@@ -98,7 +87,7 @@ public class StreamingController {
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(COVERS_BUCKET)
+                            .bucket(minioProperties.getBucketsCovers())
                             .object(id)
                             .build());
         } catch (Exception ex) {
@@ -111,7 +100,7 @@ public class StreamingController {
     public StatObjectResponse getTrackFileStatById(String id) {
         try {
             return minioClient.statObject(StatObjectArgs.builder()
-                    .bucket(TRACKS_BUCKET)
+                    .bucket(minioProperties.getBucketsTracks())
                     .object(id)
                     .build());
         } catch (Exception ex) {
@@ -125,7 +114,7 @@ public class StreamingController {
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(TRACKS_BUCKET)
+                            .bucket(minioProperties.getBucketsTracks())
                             .object(id)
                             .offset(offset)
                             .length(length)
@@ -141,7 +130,7 @@ public class StreamingController {
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(TRACKS_BUCKET)
+                            .bucket(minioProperties.getBucketsTracks())
                             .object(id)
                             .build());
         } catch (Exception ex) {

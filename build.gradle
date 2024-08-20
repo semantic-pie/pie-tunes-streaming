@@ -27,12 +27,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	implementation 'io.minio:minio:8.5.8'
 	implementation 'com.google.guava:guava:33.1.0-jre'
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
 }
