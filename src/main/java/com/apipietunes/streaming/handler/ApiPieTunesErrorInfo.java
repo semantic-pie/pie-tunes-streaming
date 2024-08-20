@@ -1,4 +1,4 @@
-package com.apipietunes.streaming.dto;
+package com.apipietunes.streaming.handler;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +23,5 @@ public class ApiPieTunesErrorInfo {
         this.status = status;
         this.url = url;
         this.message = message;
-
     }
 }
